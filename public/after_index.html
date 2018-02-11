@@ -1,0 +1,36 @@
+<html>
+  <head>
+    <script src="https://www.gstatic.com/firebasejs/4.9.0/firebase.js"></script>
+    <script src="/__/firebase/4.9.0/firebase-app.js"></script>
+    <script src="/__/firebase/4.9.0/firebase-auth.js"></script>
+    <script src="/__/firebase/4.9.0/firebase-database.js"></script>
+    <script src="/__/firebase/init.js"></script>
+
+    <script type="text/javascript">
+	window.onload = Axa;
+    </script>
+    <script type="text/javascript">
+	    firebase.auth().onAuthStateChanged(function(user) {
+		    if (user) {
+				
+			    var ref = firebase.database().ref();
+
+			    ref.on('value', function(snapshot) {
+				    document.getElementById('data').innerHTML = JSON.stringify(snapshot.val(), null, 2);
+			    });
+
+		    } else {
+			    window.location = 'index.html';
+		    }
+	    });
+    </script>
+
+
+    <title>Firebase example</title>
+  </head>
+  <body>
+    <h1>Firebase example</h1>
+    <pre id='data'></pre>
+
+  </body>
+</html>

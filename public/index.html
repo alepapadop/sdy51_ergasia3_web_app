@@ -1,0 +1,64 @@
+<html>
+	<head>
+		<meta charset="utf-8"/>
+		<script src="https://www.gstatic.com/firebasejs/4.9.0/firebase.js"></script>
+		<script src="/__/firebase/4.0.0/firebase-app.js"></script>
+		<script src="/__/firebase/4.0.0/firebase-auth.js"></script>
+		<script src="/__/firebase/4.0.0/firebase-database.js"></script>
+		<script src="/__/firebase/init.js"></script>
+		<script type="text/javascript">
+			var config = {
+				apiKey: "AIzaSyDbnMKw8l2R65PlFBNKiJHCFnKSNvGXfLs",
+				authDomain: "sdy51ergasi3.firebaseapp.com",
+				databaseURL: "https://sdy51ergasi3.firebaseio.com",
+				projectId: "sdy51ergasi3",
+				storageBucket: "sdy51ergasi3.appspot.com",
+				messagingSenderId: "274950697358"
+			};
+			firebase.initializeApp(config);
+		</script>
+		<script type="text/javascript">
+			function FormFun(event) {
+				user = document.getElementById("user").value;
+				pass = document.getElementById("pass").value;
+
+				firebase.auth().signInWithEmailAndPassword(user, pass).catch(function(error) {
+					var errorCode = error.code;
+					var errorMessage = error.message;
+				
+					alert(errorMessage);
+				
+					return false;
+				});
+				
+				var user = firebase.auth().currentUser;
+
+				var database = firebase.database();
+				
+				return true;
+			}
+		</script>
+		<script type="text/javascript">
+			firebase.auth().onAuthStateChanged(function(user) {
+				if (user) {
+					window.location = 'after_index.html'; //After successful login, user will be redirected to home.html
+				} else {
+					//window.location = 'index.html';
+				}
+			});
+
+		</script>
+
+		<title>Firebase example</title>
+	</head>
+	<body>
+		<h1>Firebase example for SDY51 and Traffic control</h1>
+		<div>
+			<input type="text" id="user" placeholder="Username" required>
+			<input type="password" id="pass" placeholder="Password" required>
+			<button type='submit' id='login' onclick='FormFun();'>Login</button>
+		</div>
+
+		<pre id='data'></pre>
+	</body>
+</html>
