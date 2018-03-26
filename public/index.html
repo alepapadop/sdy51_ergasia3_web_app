@@ -15,7 +15,9 @@
 				storageBucket: "sdy51ergasi3.appspot.com",
 				messagingSenderId: "274950697358"
 			};
-			firebase.initializeApp(config);
+			if (!firebase.apps.length) {
+				firebase.initializeApp(config);
+			}
 		</script>
 		<script type="text/javascript">
 			function FormFun(event) {
@@ -49,13 +51,23 @@
 
 		</script>
 
+		<script>
+			function CreateAccount() {
+				window.location = 'sign_up.html'
+			}
+		</script>
+
 		<title>Firebase example</title>
 	</head>
 	<body>
-		<h1>Firebase example for SDY51 and Traffic control</h1>
-		<div>
-			<input type="text" id="user" placeholder="Username" required>
-			<input type="password" id="pass" placeholder="Password" required>
+		<nav style='width:100%; padding:20px; text-align:right;'>
+			<button onclick='CreateAccount();'>Sign Up</button>
+		</nav>
+
+		<div style='text-align: center;  padding: 200px 0;'>
+			<h1>SDY51 Traffic Control Web App</h1><br>
+			<input type="text" id="user" placeholder="Username" required><br><br>
+			<input type="password" id="pass" placeholder="Password" required><br><br>
 			<button type='submit' id='login' onclick='FormFun();'>Login</button>
 		</div>
 

@@ -1,36 +1,279 @@
 <html>
-  <head>
-    <script src="https://www.gstatic.com/firebasejs/4.9.0/firebase.js"></script>
-    <script src="/__/firebase/4.9.0/firebase-app.js"></script>
-    <script src="/__/firebase/4.9.0/firebase-auth.js"></script>
-    <script src="/__/firebase/4.9.0/firebase-database.js"></script>
-    <script src="/__/firebase/init.js"></script>
+	<head>
+		<style>
+			#map {
+				height: 760px;
+				width: 100%;
+			}
+		</style>
 
-    <script type="text/javascript">
-	window.onload = Axa;
-    </script>
-    <script type="text/javascript">
-	    firebase.auth().onAuthStateChanged(function(user) {
-		    if (user) {
+
+		<script src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
+		<script src="https://cdn.datatables.net/1.10.4/js/jquery.dataTables.min.js"></script>
+		<!-- <link rel="stylesheet" href="https://cdn.datatables.net/1.10.4/css/jquery.dataTables.min.css"> -->
+		<link rel= "stylesheet" href="https://cdn.datatables.net/select/1.2.5/css/select.dataTables.min.css">
+
+		<script src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
+		<script src="https://cdn.datatables.net/1.10.4/js/jquery.dataTables.min.js"></script>
+		<script src="https://cdn.datatables.net/plug-ins/9dcbecd42ad/integration/jqueryui/dataTables.jqueryui.js"></script>
+		<link rel="stylesheet" href="https://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css">
+		<link rel="stylesheet" href="https://cdn.datatables.net/plug-ins/9dcbecd42ad/integration/jqueryui/dataTables.jqueryui.css">
+
+		<script src="https://www.gstatic.com/firebasejs/4.9.0/firebase.js"></script>
+		<script src="/__/firebase/4.9.0/firebase-app.js"></script>
+		<script src="/__/firebase/4.9.0/firebase-auth.js"></script>
+		<script src="/__/firebase/4.9.0/firebase-database.js"></script>
+		<script src="/__/firebase/init.js"></script>
+
+		<script type="text/javascript">
+			$(document).ready(function () {
+				$('#table_id').DataTable({
+					"pagingType": "full_numbers",
+					"lengthMenu": [[5, 10, 25, 50], [5, 10, 25, 50]],
+					"scrollY"  : "600px"
+				});
+			});
+		</script>
+		<script type="text/javascript">
+			function timeConverter(UNIX_timestamp){
+				var a = new Date(UNIX_timestamp * 1000);
+				var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+				var year = a.getFullYear();
+				var month = months[a.getMonth()];
+				var date = a.getDate();
+				var hour = a.getHours();
+				var min = a.getMinutes();
+				var sec = a.getSeconds();
+				var time = date + ' ' + month + ' ' + year + ' ' + hour + ':' + min + ':' + sec ;
+				return time;
+			}
+		</script>
+		<script type="text/javascript">
+			var ref = null;
+			var myObj = null;
+			var dataSnap = null;
+
+			firebase.auth().onAuthStateChanged(function(user) {
+				if (user) {
+					console.log('username ' + user.email);
+
+					ref = firebase.database().ref();
+
+					ref.on('value', function(snapshot) {
+						dataSnap = snapshot.child("data");
+						myObj = dataSnap.val();
+						var table = $('#table_id').DataTable();
+
+						console.log(myObj);
+						dataSnap.forEach(function(userSnapshot) {
+							var user = userSnapshot.key;
+
+							console.log(user);
+
+							console.log(userSnapshot.val());
+							
+							userSnapshot.forEach(function(trafficDataSnapshot) {
+								var traffic_rating = trafficDataSnapshot.child('traffic').val();
+								var latitude = trafficDataSnapshot.child('latitude').val();
+								var longitude = trafficDataSnapshot.child('longitude').val(); 
+								var timestamp = trafficDataSnapshot.child('timestamp').val(); 
+								var pos_feedback = trafficDataSnapshot.child('pos_feedback').val(); 
+								var neg_feedback = trafficDataSnapshot.child('neg_feedback').val(); 
+
+								
+								var datez = timeConverter(timestamp)
+
+								table.row.add([user, datez, latitude, longitude, traffic_rating, pos_feedback, neg_feedback]).draw(false);
+							});
+						});
+					});
+
+				} else {
+					window.location = 'index.html';
+				}
+			});
+
+		</script>
+		<script>
+			var map = null;
+
+			function initMap() {
 				
-			    var ref = firebase.database().ref();
+				var myLatLng = {lat: -25.363, lng: 131.044};
 
-			    ref.on('value', function(snapshot) {
-				    document.getElementById('data').innerHTML = JSON.stringify(snapshot.val(), null, 2);
-			    });
+				map = new google.maps.Map(document.getElementById('map'), {
+					zoom: 1,
+					center: myLatLng
+				});
 
-		    } else {
-			    window.location = 'index.html';
-		    }
-	    });
-    </script>
+			}
+		</script>
 
 
-    <title>Firebase example</title>
-  </head>
-  <body>
-    <h1>Firebase example</h1>
-    <pre id='data'></pre>
+		<script type="text/javascript">
+			
+			var markers = [];
+			var indexes = [];
+			var prev_sel = null;
 
-  </body>
+			function event_fun() {
+
+				var table = $('#table_id').DataTable();
+				var data = table.rows({page: 'current', search: 'applied'}).data();
+				var i;
+
+				for (i = 0; i < markers.length; i++) {
+					markers[i].setMap(null);
+				}
+
+				markers = [];
+				indexes = [];
+
+				data.each(function (value, index) {
+					console.log('Data in index: ' + index + ' is: ' + value[1]);
+					
+					var coord ={lat: value[2], lng: value[3]};
+
+					var marker = new google.maps.Marker({
+						position: coord,
+						map: map,
+						title: 'Date: ' + value[1] + ' Traffic: ' +value[4] + ' Positives: ' + value[5] + ' Negatives: ' + value[6]
+					});
+
+					google.maps.event.addListener(marker, 'click', function () {
+						console.log(marker);
+						for (var i = 0; i < markers.length; i++) {
+							if ( $(table.rows(i).nodes()).hasClass('selected') ) {
+								$(table.rows(i).nodes()).removeClass('selected');
+							}
+							if (marker == markers[i]) {
+								console.log(table.rows(i).data());
+								$(table.rows(i).nodes()).toggleClass('selected');
+							}
+						}
+					});
+					
+					if (!index) {
+						map.setCenter(coord);
+						map.setZoom(8);
+					}
+					var info = table.page.info();
+
+					indexes.push(index + info.start);
+
+					markers.push(marker);
+				});
+
+			}
+
+
+			$(document).ready( function () {
+				console.log('ready');
+
+				var table = $('#table_id').DataTable();
+
+				table.on( 'length.dt', function () {
+					console.log( 'lenght occurred at: ');
+					event_fun();
+					
+				} );
+
+				table.on( 'page.dt', function () {
+					console.log( 'Page occurred at: ');
+					event_fun();
+					
+				} );
+
+				table.on( 'search.dt', function () {
+					console.log( 'Page occurred at: ');
+					event_fun();
+					
+				} );
+
+				table.on( 'click', 'tr', function () {
+					var is_selection = 0;
+					
+					console.log('tr event');
+					if ( $(this).hasClass('selected') ) {
+						$(this).removeClass('selected');
+					} else {
+						table.$('tr.selected').removeClass('selected');
+						$(this).addClass('selected');
+						is_selection = 1;
+					}
+
+					if (map != null) {
+						for (var i = 0; i < indexes.length; i++) {
+							console.log('indexes ' + indexes[i] + ' table row ' + table.row(this).index());
+
+							if (indexes[i] == table.row(this).index()) {
+
+								var marker = markers[i];
+
+								if (is_selection) {
+									marker.setAnimation(google.maps.Animation.BOUNCE);
+									setTimeout(function(){ marker.setAnimation(null);}, 3000);
+								} else {
+									marker.setAnimation(null);
+								}
+							}
+						}
+					}
+				} );
+			} );
+
+		</script>
+
+		<script>
+			function sign_out_fun() {
+				firebase.auth().signOut().then(function() {
+					console.log('Signed Out');
+				}, function(error) {
+					console.error('Sign Out Error', error);
+				});
+			}
+		</script>
+
+		<title>Firebase example</title>
+	</head>
+	<body>
+		<header>
+			<h1> SDY51 traffic Control </h1>
+		</header>
+
+		<nav style="width:100%; padding: 20px;">
+			<div style='margin:0px; padding:0px; text-align:right;'>
+				<button onclick="sign_out_fun()" type="button" >Sign Out</button>
+			</div>
+		</nav>
+
+		<section style="width:100%; height:100%;">
+			<div style="float:left; width:64%; background-color:white; border-right: 5px solid green;">
+				<table id="table_id" class="table table-condensed table-striped table-hover">
+					<thead>
+						<tr>
+							<th>User</th>
+							<th>Date</th>
+							<th>latitude</th>
+							<th>longitude</th>
+							<th>Traffic Rating</th>
+							<th>Positive feedback</th>
+							<th>Negative feedback</th>
+						</tr>
+					</thead>
+
+					<tbody id="table_data">
+					</tbody>
+				</table>
+			</div>
+
+			<div id='map' class="display" style="float:right; width:35%; background-color:white; border-left: 5px solid yellow;">
+			</div>
+			<script async defer 
+		 		src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDG38qx0EzQxEwxrSFdlbDgP9Ax4B-R-tk&callback=initMap" type="text/javascript">
+			</script>
+
+		</section>
+
+	</body>
 </html>
