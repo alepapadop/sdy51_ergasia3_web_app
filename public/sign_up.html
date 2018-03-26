@@ -1,0 +1,54 @@
+<html>
+	<head>
+		<meta charset="utf-8"/>
+		<script src="https://www.gstatic.com/firebasejs/4.9.0/firebase.js"></script>
+		<script src="/__/firebase/4.0.0/firebase-app.js"></script>
+		<script src="/__/firebase/4.0.0/firebase-auth.js"></script>
+		<script src="/__/firebase/4.0.0/firebase-database.js"></script>
+		<script src="/__/firebase/init.js"></script>
+		<script type="text/javascript">
+			var config = {
+				apiKey: "AIzaSyDbnMKw8l2R65PlFBNKiJHCFnKSNvGXfLs",
+				authDomain: "sdy51ergasi3.firebaseapp.com",
+				databaseURL: "https://sdy51ergasi3.firebaseio.com",
+				projectId: "sdy51ergasi3",
+				storageBucket: "sdy51ergasi3.appspot.com",
+				messagingSenderId: "274950697358"
+			};
+			<!-- firebase.initializeApp(config); -->
+		</script>
+		<script type="text/javascript">
+			function SignUpFun(event) {
+				username = document.getElementById("user").value;
+				pass = document.getElementById("pass").value;
+
+
+				firebase.auth().createUserWithEmailAndPassword(username, pass).then(function(user){
+					console.log('everything went fine');
+					console.log('user object:' + username);
+					window.location = 'after_index.html';
+					//you can save the user data here.
+				}).catch(function(error) {
+					console.log('there was an error');
+					var errorCode = error.code;
+					var errorMessage = error.message;
+					console.log(errorCode + ' - ' + errorMessage);
+				});
+				
+				return true;
+			}
+		</script>
+
+		<title>Firebase example</title>
+	</head>
+	<body>
+		<div style='text-align: center;  padding: 200px 0;'>
+			<h1>SDY51 Traffic Control Web App</h1><br>
+			<input type="text" id="user" placeholder="Username" required><br><br>
+			<input type="password" id="pass" placeholder="Password" required><br><br>
+			<button type='submit' id='login' onclick='SignUpFun();'>Sign Up</button>
+		</div>
+
+		<pre id='data'></pre>
+	</body>
+</html>
