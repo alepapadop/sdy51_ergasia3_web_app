@@ -43,7 +43,29 @@
 		<script type="text/javascript">
 			firebase.auth().onAuthStateChanged(function(user) {
 				if (user) {
-					window.location = 'after_index.html'; //After successful login, user will be redirected to home.html
+					console.log('AAAA ' + user.uid);
+					
+					var ref = firebase.database().ref();
+
+					ref.child('users').orderByKey().equalTo(user.uid).on('value', function(snapshot) {
+						console.log(snapshot.val());
+						var obj = snapshot.val();
+
+						console.log(snapshot.child(user.uid).child('user_type').val());
+						if (snapshot.child(user.uid).child('user_type').val() == 'WebUser') {
+						
+							window.location = 'after_index.html'; //After successful login, user will be redirected to home.html
+						} else {
+							alert('You are not an Authorised user for the Web App \n Your account is only valid for the Mobile App');
+							firebase.auth().signOut().then(function() {
+								console.log('sign out');
+							}, function(error) {
+								console.log(error);
+							});
+						}
+					});
+
+					//window.location = 'after_index.html'; //After successful login, user will be redirected to home.html
 				} else {
 					//window.location = 'index.html';
 				}

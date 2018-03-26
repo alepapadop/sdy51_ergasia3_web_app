@@ -6,17 +6,28 @@
 		<script src="/__/firebase/4.0.0/firebase-auth.js"></script>
 		<script src="/__/firebase/4.0.0/firebase-database.js"></script>
 		<script src="/__/firebase/init.js"></script>
-		<script type="text/javascript">
-			var config = {
-				apiKey: "AIzaSyDbnMKw8l2R65PlFBNKiJHCFnKSNvGXfLs",
-				authDomain: "sdy51ergasi3.firebaseapp.com",
-				databaseURL: "https://sdy51ergasi3.firebaseio.com",
-				projectId: "sdy51ergasi3",
-				storageBucket: "sdy51ergasi3.appspot.com",
-				messagingSenderId: "274950697358"
-			};
-			<!-- firebase.initializeApp(config); -->
+
+		<script>
+			firebase.auth().onAuthStateChanged(function(user) {
+				
+				if (user) {
+
+					firebase.database().ref('users/' + user.uid).set({
+						user_type: 'WebUser'
+					}).then(function() {
+						console.log('Synchronization succeeded');
+						window.location = 'after_index.html';
+					}).catch(function(error) {
+						console.log('Synchronization failed');
+					});
+
+
+					return true;
+				}
+
+			});
 		</script>
+
 		<script type="text/javascript">
 			function SignUpFun(event) {
 				username = document.getElementById("user").value;
@@ -24,9 +35,12 @@
 
 
 				firebase.auth().createUserWithEmailAndPassword(username, pass).then(function(user){
+					
+					console.log(user);
 					console.log('everything went fine');
-					console.log('user object:' + username);
-					window.location = 'after_index.html';
+					console.log('user id:' + user.uid);
+					console.log('username:' + username);
+					console.log('logedin');
 					//you can save the user data here.
 				}).catch(function(error) {
 					console.log('there was an error');
